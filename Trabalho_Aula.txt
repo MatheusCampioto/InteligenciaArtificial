@@ -1,0 +1,359 @@
+Open In Colab
+Trabalho de Machine Learning no Google Colab
+Aluno: Matheus Felipe Campioto Catenacci
+Tema: Classificação de clima com KNN e Árvore de Decisão usando dados de uma planilha do Google Sheets
+Objetivo: seguir a metodologia pedida em aula:
+
+usar um conjunto de dados
+ler os dados de uma planilha Google
+treinar com KNN e Árvore de Decisão
+testar features, hiperparâmetros e divisões treino/teste
+comparar os resultados e concluir qual configuração foi melhor
+
+Origem dos dados
+Os dados são carregados diretamente de uma planilha no Google Sheets através do link de exportação no formato TSV.
+
+SHEET_ID: 1bXOdVB5CxxgvDB-1qZn1v6jnA7e1mUmvT3pwJvfLaRI
+GID: 0
+Observação: isso atende à etapa da planilha no Google Docs/Google Sheets.
+
+1) Importação das bibliotecas
+
+import warnings
+warnings.filterwarnings("ignore")
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    ConfusionMatrixDisplay
+)
+
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 150)
+     
+2) Leitura da planilha Google Sheets
+
+SHEET_ID = "1bXOdVB5CxxgvDB-1qZn1v6jnA7e1mUmvT3pwJvfLaRI"
+GID = "0"
+
+
+url_tsv = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=tsv&gid={GID}"
+
+df = pd.read_csv(url_tsv, sep="\t", decimal=",")
+print("Dimensões originais:", df.shape)
+display(df.head())
+     
+3) Preparação e limpeza dos dados
+
+FEATURE_CANDIDATES = ["latitude", "longitude", "altitude_m", "temp_media_c"]
+TARGET = "clima"
+
+
+for col in FEATURE_CANDIDATES:
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+
+df[TARGET] = df[TARGET].astype(str).str.strip().str.lower()
+
+
+df = df.dropna(subset=FEATURE_CANDIDATES + [TARGET]).copy()
+
+print("Dimensões após limpeza:", df.shape)
+print("\nValores ausentes por coluna:")
+display(df[FEATURE_CANDIDATES + [TARGET]].isna().sum().to_frame("faltantes"))
+
+print("\nDistribuição da classe:")
+display(df[TARGET].value_counts().to_frame("quantidade"))
+
+display(df.head())
+     
+4) Definição dos testes
+
+FEATURE_SETS = {
+    "lat_lon": ["latitude", "longitude"],
+    "lat_alt": ["latitude", "altitude_m"],
+    "lon_alt": ["longitude", "altitude_m"],
+    "lat_lon_alt": ["latitude", "longitude", "altitude_m"],
+    "todas": ["latitude", "longitude", "altitude_m", "temp_media_c"]
+}
+
+TEST_SIZES = [0.2, 0.3, 0.4]
+
+KNN_CONFIGS = {
+    "n_neighbors": [3, 5, 7],
+    "weights": ["uniform", "distance"]
+}
+
+TREE_CONFIGS = {
+    "criterion": ["gini", "entropy"],
+    "max_depth": [None, 3, 5],
+    "min_samples_split": [2, 4]
+}
+
+print("Conjuntos de features:")
+for nome, feats in FEATURE_SETS.items():
+    print(f"- {nome}: {feats}")
+
+print("\nTest sizes:", TEST_SIZES)
+     
+5) Funções auxiliares
+
+def preparar_xy(df, features, target):
+    le = LabelEncoder()
+    y = le.fit_transform(df[target])
+    X = df[features].copy()
+    return X, y, le
+
+def avaliar_knn(df, features, test_size, n_neighbors, weights, random_state=42):
+    X, y, le = preparar_xy(df, features, TARGET)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+
+    modelo = Pipeline([
+        ("scaler", StandardScaler()),
+        ("knn", KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights))
+    ])
+
+    modelo.fit(X_train, y_train)
+    y_pred = modelo.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+
+    return {
+        "modelo": "KNN",
+        "features": features,
+        "test_size": test_size,
+        "n_neighbors": n_neighbors,
+        "weights": weights,
+        "acuracia": acc,
+        "obj_modelo": modelo,
+        "X_test": X_test,
+        "y_test": y_test,
+        "y_pred": y_pred,
+        "classes": le.classes_
+    }
+
+def avaliar_tree(df, features, test_size, criterion, max_depth, min_samples_split, random_state=42):
+    X, y, le = preparar_xy(df, features, TARGET)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+
+    modelo = DecisionTreeClassifier(
+        criterion=criterion,
+        max_depth=max_depth,
+        min_samples_split=min_samples_split,
+        random_state=random_state
+    )
+
+    modelo.fit(X_train, y_train)
+    y_pred = modelo.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+
+    return {
+        "modelo": "Árvore de Decisão",
+        "features": features,
+        "test_size": test_size,
+        "criterion": criterion,
+        "max_depth": max_depth,
+        "min_samples_split": min_samples_split,
+        "acuracia": acc,
+        "obj_modelo": modelo,
+        "X_test": X_test,
+        "y_test": y_test,
+        "y_pred": y_pred,
+        "classes": le.classes_
+    }
+     
+6) Testes com KNN
+
+resultados_knn = []
+
+for nome_set, feats in FEATURE_SETS.items():
+    for test_size in TEST_SIZES:
+        for n_neighbors in KNN_CONFIGS["n_neighbors"]:
+            for weights in KNN_CONFIGS["weights"]:
+                r = avaliar_knn(
+                    df=df,
+                    features=feats,
+                    test_size=test_size,
+                    n_neighbors=n_neighbors,
+                    weights=weights
+                )
+                r["nome_set"] = nome_set
+                resultados_knn.append(r)
+
+df_knn = pd.DataFrame([
+    {
+        "modelo": r["modelo"],
+        "nome_set": r["nome_set"],
+        "features": ", ".join(r["features"]),
+        "test_size": r["test_size"],
+        "n_neighbors": r["n_neighbors"],
+        "weights": r["weights"],
+        "acuracia": r["acuracia"]
+    }
+    for r in resultados_knn
+]).sort_values("acuracia", ascending=False).reset_index(drop=True)
+
+display(df_knn.head(10))
+     
+7) Testes com Árvore de Decisão
+
+resultados_tree = []
+
+for nome_set, feats in FEATURE_SETS.items():
+    for test_size in TEST_SIZES:
+        for criterion in TREE_CONFIGS["criterion"]:
+            for max_depth in TREE_CONFIGS["max_depth"]:
+                for min_samples_split in TREE_CONFIGS["min_samples_split"]:
+                    r = avaliar_tree(
+                        df=df,
+                        features=feats,
+                        test_size=test_size,
+                        criterion=criterion,
+                        max_depth=max_depth,
+                        min_samples_split=min_samples_split
+                    )
+                    r["nome_set"] = nome_set
+                    resultados_tree.append(r)
+
+df_tree = pd.DataFrame([
+    {
+        "modelo": r["modelo"],
+        "nome_set": r["nome_set"],
+        "features": ", ".join(r["features"]),
+        "test_size": r["test_size"],
+        "criterion": r["criterion"],
+        "max_depth": r["max_depth"],
+        "min_samples_split": r["min_samples_split"],
+        "acuracia": r["acuracia"]
+    }
+    for r in resultados_tree
+]).sort_values("acuracia", ascending=False).reset_index(drop=True)
+
+display(df_tree.head(10))
+     
+8) Comparação dos melhores resultados
+
+melhor_knn = max(resultados_knn, key=lambda x: x["acuracia"])
+melhor_tree = max(resultados_tree, key=lambda x: x["acuracia"])
+
+comparacao = pd.DataFrame([
+    {
+        "modelo": "KNN",
+        "nome_set": melhor_knn["nome_set"],
+        "features": ", ".join(melhor_knn["features"]),
+        "test_size": melhor_knn["test_size"],
+        "parametros": f'n_neighbors={melhor_knn["n_neighbors"]}, weights={melhor_knn["weights"]}',
+        "acuracia": melhor_knn["acuracia"]
+    },
+    {
+        "modelo": "Árvore de Decisão",
+        "nome_set": melhor_tree["nome_set"],
+        "features": ", ".join(melhor_tree["features"]),
+        "test_size": melhor_tree["test_size"],
+        "parametros": (
+            f'criterion={melhor_tree["criterion"]}, '
+            f'max_depth={melhor_tree["max_depth"]}, '
+            f'min_samples_split={melhor_tree["min_samples_split"]}'
+        ),
+        "acuracia": melhor_tree["acuracia"]
+    }
+]).sort_values("acuracia", ascending=False)
+
+display(comparacao)
+     
+9) Métricas do melhor KNN
+
+print("Melhor configuração KNN:")
+print({
+    "features": melhor_knn["features"],
+    "test_size": melhor_knn["test_size"],
+    "n_neighbors": melhor_knn["n_neighbors"],
+    "weights": melhor_knn["weights"],
+    "acuracia": round(melhor_knn["acuracia"], 4)
+})
+
+print("\nRelatório de classificação:")
+print(classification_report(melhor_knn["y_test"], melhor_knn["y_pred"], target_names=melhor_knn["classes"]))
+
+cm_knn = confusion_matrix(melhor_knn["y_test"], melhor_knn["y_pred"])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_knn, display_labels=melhor_knn["classes"])
+disp.plot()
+plt.title("Matriz de Confusão - Melhor KNN")
+plt.show()
+     
+10) Métricas da melhor Árvore de Decisão
+
+print("Melhor configuração da Árvore:")
+print({
+    "features": melhor_tree["features"],
+    "test_size": melhor_tree["test_size"],
+    "criterion": melhor_tree["criterion"],
+    "max_depth": melhor_tree["max_depth"],
+    "min_samples_split": melhor_tree["min_samples_split"],
+    "acuracia": round(melhor_tree["acuracia"], 4)
+})
+
+print("\nRelatório de classificação:")
+print(classification_report(melhor_tree["y_test"], melhor_tree["y_pred"], target_names=melhor_tree["classes"]))
+
+cm_tree = confusion_matrix(melhor_tree["y_test"], melhor_tree["y_pred"])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_tree, display_labels=melhor_tree["classes"])
+disp.plot()
+plt.title("Matriz de Confusão - Melhor Árvore de Decisão")
+plt.show()
+     
+11) Visualização da melhor Árvore
+
+plt.figure(figsize=(18, 8))
+plot_tree(
+    melhor_tree["obj_modelo"],
+    feature_names=melhor_tree["features"],
+    class_names=list(melhor_tree["classes"]),
+    filled=True,
+    rounded=True
+)
+plt.title("Melhor Árvore de Decisão")
+plt.show()
+     
+12) Conclusão
+
+melhor_geral = max(
+    [
+        {"modelo": "KNN", "acuracia": melhor_knn["acuracia"]},
+        {"modelo": "Árvore de Decisão", "acuracia": melhor_tree["acuracia"]}
+    ],
+    key=lambda x: x["acuracia"]
+)
+
+print("Conclusão do experimento:")
+print(f"- O melhor modelo geral foi: {melhor_geral['modelo']}")
+print(f"- Melhor acurácia encontrada: {melhor_geral['acuracia']:.4f}")
+print("- A fonte dos dados utilizada foi uma planilha hospedada no Google Sheets.")
+print("- Foram avaliadas múltiplas combinações de variáveis de entrada.")
+print("- Diferentes configurações de hiperparâmetros foram exploradas para cada algoritmo.")
+print("- A proporção entre treino e teste foi variada ao longo dos experimentos.")
+print("- Com isso, todos os requisitos da metodologia definida no enunciado foram cumpridos.")
+     
+13) Texto pronto para usar no relatório
+Neste trabalho foi desenvolvida uma solução de classificação supervisionada com base nos algoritmos KNN e Árvore de Decisão. Os dados utilizados foram extraídos de uma planilha no Google Sheets e importados diretamente no ambiente do Google Colab. Após as etapas de limpeza e pré-processamento, foram definidas diferentes combinações de variáveis preditoras, bem como distintas proporções de divisão entre os conjuntos de treino e teste. No caso do KNN, foram exploradas variações nos parâmetros n_neighbors e weights. Para a Árvore de Decisão, os parâmetros criterion, max_depth e min_samples_split foram ajustados em diferentes configurações. A avaliação dos modelos foi conduzida com base na acurácia, no relatório de classificação e na matriz de confusão. Ao término dos experimentos, foi possível determinar a configuração com melhor desempenho e identificar qual dos dois algoritmos se mostrou mais adequado para o problema em questão.

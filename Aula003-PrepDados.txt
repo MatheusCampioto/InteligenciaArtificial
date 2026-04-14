@@ -1,0 +1,129 @@
+1) Importância da Preparação
+
+A qualidade dos dados é um fator decisivo no desempenho de qualquer modelo de machine learning. Quando o conjunto de dados apresenta inconsistências, registros incorretos ou lacunas de informação, o modelo tende a aprender padrões equivocados. Mesmo algoritmos sofisticados produzem resultados insatisfatórios quando alimentados com dados de baixa qualidade. Por esse motivo, investir no tratamento e na organização dos dados costuma ter um impacto maior do que simplesmente trocar o algoritmo utilizado.
+
+==============================================================================================================================================================================
+
+2) Valores Ausentes
+
+a) Existem diversas abordagens para lidar com dados faltantes: substituí-los pela média ou mediana da variável, incluir uma categoria específica como "não disponível", estimar os valores ausentes por meio de um modelo preditivo auxiliar, ou optar por algoritmos nativamente capazes de lidar com esse tipo de situação.
+
+b) Excluir registros com dados ausentes pode ser prejudicial quando a quantidade de informação faltante é elevada, pois reduz significativamente o tamanho do dataset. Além disso, essa abordagem deve ser evitada quando os dados ausentes carregam informações relevantes ou quando sua ausência não ocorre de forma aleatória, pois isso pode introduzir viés no modelo.
+
+==============================================================================================================================================================================
+
+3) Normalização vs Padronização
+
+A Normalização (Min-Max) reescala os valores para que fiquem dentro de um intervalo fixo, geralmente entre 0 e 1.
+
+A Padronização (Z-score) transforma os dados para que tenham média igual a zero e desvio padrão igual a 1, redistribuindo-os em torno de um ponto central.
+
+A normalização é a escolha mais adequada para algoritmos baseados em distância, como KNN e técnicas de clustering, pois garante que nenhuma variável domine as demais pela escala. Já a padronização é mais indicada para modelos que pressupõem distribuição normal dos dados, como regressão linear e redes neurais, pois favorece a convergência durante o treinamento.
+
+==============================================================================================================================================================================
+
+4) Dados Categóricos
+
+a) Para tornar variáveis categóricas utilizáveis pelos modelos, aplica-se o one-hot encoding, que consiste em criar uma coluna binária para cada categoria possível. Por exemplo, uma variável "clima" com os valores "sol", "chuva" e "nublado" se tornaria três colunas distintas com valores 0 ou 1.
+
+b) Atribuir valores numéricos diretamente às categorias, como 0, 1 e 2, é problemático porque o modelo interpreta esses números como uma hierarquia ou ordem, o que geralmente não existe entre categorias nominais. Isso pode distorcer o aprendizado do modelo.
+
+==============================================================================================================================================================================
+
+5) Overfitting e Separação de Dados
+
+O dataset é dividido em três partes: treino, utilizado para o aprendizado do modelo; validação, usado para ajuste de hiperparâmetros sem comprometer a imparcialidade da avaliação; e teste, reservado para a avaliação final do desempenho real do modelo.
+
+Utilizar os dados de teste durante o treinamento invalida a avaliação, pois o modelo já terá sido exposto a esses exemplos anteriormente. Isso faz com que os resultados reflitam memorização ao invés de capacidade de generalização.
+
+==============================================================================================================================================================================
+
+6) Balanceamento de Classes
+
+a) Quando uma classe representa a grande maioria dos dados, o modelo tende a se tornar enviesado, aprendendo quase exclusivamente a identificar a classe dominante e apresentando desempenho fraco na classe minoritária.
+
+b) Para contornar esse problema, é possível utilizar oversampling para aumentar a representatividade da classe menor, undersampling para reduzir a classe majoritária, ou técnicas como o SMOTE, que geram amostras sintéticas baseadas nos dados existentes da classe minoritária.
+
+==============================================================================================================================================================================
+
+7) Detecção de Outliers
+
+a) Outliers são observações que se distanciam consideravelmente do padrão geral dos dados, como valores extremamente altos ou baixos que destoam do comportamento esperado.
+
+b) A remoção indiscriminada de outliers pode ser prejudicial quando esses pontos representam comportamentos legítimos e relevantes, como um usuário com perfil atípico que merece atenção especial.
+
+c) Uma das técnicas mais acessíveis para identificar outliers é o cálculo do Intervalo Interquartil (IQR), que delimita uma faixa aceitável de variação e aponta os valores que ficam fora desse intervalo.
+
+==============================================================================================================================================================================
+
+8) Feature Engineering
+
+Utilizar a idade como variável é mais vantajoso do que trabalhar diretamente com a data de nascimento, porque a idade é uma representação numérica direta e interpretável da fase de vida de uma pessoa. Datas de nascimento exigem transformações adicionais e tendem a ser menos eficientes para o aprendizado do modelo.
+
+==============================================================================================================================================================================
+
+9) Pipeline de Pré-processamento
+
+Um pipeline completo de pré-processamento envolve as seguintes etapas:
+
+Tratar os valores ausentes, seja preenchendo com estatísticas descritivas ou criando uma categoria "desconhecido";
+
+Aplicar one-hot encoding nas variáveis categóricas para convertê-las em formato numérico sem criar ordenação artificial;
+
+Normalizar ou padronizar as variáveis numéricas para uniformizar a escala entre elas;
+
+Corrigir o desequilíbrio de classes por meio de técnicas como oversampling ou geração de dados sintéticos;
+
+Por fim, dividir o dataset em treino, validação e teste para garantir uma avaliação confiável do modelo.
+
+==============================================================================================================================================================================
+
+Preparação do dataset para prever aprovação em crédito bancário
+
+Análise inicial dos dados
+
+Verificar a presença de valores ausentes em cada variável do dataset.
+
+Identificar o tipo de cada variável, distinguindo entre numéricas e categóricas.
+
+Tratamento de valores ausentes
+
+Para variáveis numéricas como renda_mensal, idade e número_de_dependentes, substituir os valores faltantes pela mediana da respectiva variável.
+
+Para variáveis categóricas como estado_civil e histórico_de_inadimplência, utilizar a categoria mais recorrente ou introduzir uma categoria "desconhecido".
+
+Codificação de variáveis categóricas
+
+Aplicar one-hot encoding nas variáveis estado_civil e histórico_de_inadimplência, evitando que o modelo interprete as categorias como valores com hierarquia.
+
+Ajuste de variáveis numéricas
+
+Certificar que a variável idade esteja representada como número inteiro; caso esteja no formato de data de nascimento, realizar o cálculo da idade atual.
+
+Avaliar a necessidade de agrupar número_de_dependentes em faixas para reduzir a dispersão dos dados.
+
+Normalização ou padronização
+
+Aplicar escalonamento nas variáveis renda_mensal, idade e número_de_dependentes para que todas contribuam de forma equilibrada durante o treinamento do modelo.
+
+Detecção e tratamento de outliers
+
+Investigar valores extremos nas variáveis renda_mensal e idade que possam comprometer a qualidade do modelo.
+
+Decidir entre corrigir ou remover esses valores conforme o contexto e a relevância de cada caso.
+
+Balanceamento das classes
+
+Verificar a proporção entre casos aprovados e reprovados no dataset.
+
+Caso exista desequilíbrio significativo, aplicar oversampling, undersampling ou SMOTE para equilibrar as classes.
+
+Divisão do dataset
+
+Separar os dados em conjuntos de treino, validação e teste para assegurar uma avaliação justa e evitar overfitting.
+
+Revisão e validação final
+
+Identificar e eliminar registros duplicados ou inconsistentes.
+
+Salvar o dataset processado e pronto para a etapa de treinamento.

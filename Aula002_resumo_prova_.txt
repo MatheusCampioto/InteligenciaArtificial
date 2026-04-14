@@ -1,0 +1,48 @@
+PARA A PROVA :
+
+1)  Separação de dados
+
+Os dados são divididos em treino e teste para verificar se o modelo
+realmente aprendeu padrões, em vez de apenas memorizar respostas.
+
+Quando usamos os mesmos dados para treinar e testar, o desempenho pode
+parecer alto, mas isso não reflete a realidade. O modelo acaba
+“decorando” os exemplos e não consegue lidar bem com novos dados.
+
+==================================================================================================================
+
+2)  Regressão vs Classificação
+
+Regressão ocorre quando o modelo prevê valores numéricos, como preço ou
+temperatura.
+
+Classificação acontece quando a saída é uma categoria, como “spam” ou
+“não spam”.
+
+A temperatura, por exemplo, pode ser regressão se quisermos um valor
+exato (ex: 25°C). Mas também pode ser classificação se for dividida em
+grupos como “frio”, “morno” e “quente”.
+
+==================================================================================================================
+
+3)  Escolha de Features
+
+Features são as informações usadas pelo modelo para aprender.
+
+Selecionar boas features melhora o desempenho, pois algumas variáveis
+são mais relevantes que outras. Testar diferentes combinações é
+importante, já que algumas podem não ajudar ou até prejudicar o
+resultado.
+
+==================================================================================================================
+
+4)  Papel da Normalização no KNN
+
+O algoritmo KNN utiliza distância para comparar dados, por isso é
+afetado pela escala das variáveis.
+
+Se uma feature tiver valores muito maiores que as outras, ela pode
+dominar o cálculo e gerar resultados distorcidos.
+
+A normalização resolve isso ao colocar todas as variáveis na mesma
+escala, tornando o modelo mais equilibrado.

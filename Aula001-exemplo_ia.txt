@@ -1,0 +1,15 @@
+Exemplo — Recomendação de Produtos na Amazon
+
+Software + problema: A Amazon precisa ajudar o usuário a encontrar
+produtos relevantes em meio a milhões de opções disponíveis.
+
+IA (funcionalidade): Recomendar produtos personalizados. Entrada:
+histórico de compras, buscas, cliques, avaliações, produtos
+visualizados. Saída: (1) lista de produtos recomendados, (2) sugestões
+na página inicial e durante a navegação.
+
+Técnica provável: Sistemas de recomendação (filtragem colaborativa +
+modelos baseados em conteúdo).
+
+Métrica de sucesso: Taxa de cliques e conversão em compras. Negócio:
+aumento das vendas e do ticket médio.

@@ -1,0 +1,51 @@
+# Trabalho de Matheus Felipe Campioto Catenacci
+
+import pandas as pd
+from sklearn.naive_bayes import CategoricalNB
+from sklearn.preprocessing import OrdinalEncoder
+
+# Conjunto de dados
+registros = [
+    ["infantil","miopia","não","reduzida","nenhuma"],
+    ["infantil","miopia","sim","normal","gelatinosa"],
+    ["infantil","hipermetropia","não","normal","gelatinosa"],
+    ["infantil","hipermetropia","sim","normal","dura"],
+    ["adolescente","miopia","não","reduzida","gelatinosa"],
+    ["adolescente","miopia","sim","reduzida","nenhuma"],
+    ["adolescente","miopia","não","normal","dura"],
+    ["adolescente","hipermetropia","não","reduzida","gelatinosa"],
+    ["adolescente","hipermetropia","sim","normal","dura"],
+    ["adulto","miopia","não","normal","gelatinosa"],
+    ["adulto","miopia","sim","normal","dura"],
+    ["adulto","miopia","sim","normal","gelatinosa"],
+    ["adulto","hipermetropia","não","reduzida","nenhuma"],
+    ["adulto","hipermetropia","sim","normal","gelatinosa"],
+    ["adulto","hipermetropia","não","normal","gelatinosa"],
+]
+
+# Criação do DataFrame
+tabela = pd.DataFrame(registros, columns=["FaixaEtaria","ProblemaVisual","Astigmatismo","Lacrimal","Classe"])
+print(tabela)
+
+# Separação das variáveis
+X = tabela.drop("Classe", axis=1)
+y = tabela["Classe"]
+
+# Codificação categórica
+encoder = OrdinalEncoder()
+X_codificado = encoder.fit_transform(X)
+
+# Modelo Naive Bayes
+naive_model = CategoricalNB(alpha=1.0)
+naive_model.fit(X_codificado, y)
+
+# Novo exemplo para previsão
+novo_exemplo = [["infantil","hipermetropia","não","reduzida"]]
+novo_exemplo_cod = encoder.transform(novo_exemplo)
+
+# Probabilidades previstas
+probabilidades = naive_model.predict_proba(novo_exemplo_cod)
+classes = naive_model.classes_
+
+for classe, prob in zip(classes, probabilidades[0]):
+    print(f"{classe}: {prob:.4f}")

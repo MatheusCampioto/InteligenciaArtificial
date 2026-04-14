@@ -1,0 +1,120 @@
+EXERCÍCIO – ALGORITMO ID3 (LENTES DE CONTATO)
+
+Seleção do atributo raiz
+
+Distribuição das classes no conjunto completo (15 exemplos):
+* nenhuma = 5
+* gelatinosas = 6
+* dura = 4
+
+Cálculo da entropia do conjunto S:
+H(S) = - [ (5/15)log2(5/15) + (6/15)log2(6/15) + (4/15)log2(4/15) ]
+H(S) ≈ - [ 0,33(-1,585) + 0,4(-1,322) + 0,27(-1,889) ]
+H(S) ≈ 1,56
+
+Atributo: Taxa lacrimal
+Possíveis valores: reduzida (7 exemplos), normal (8 exemplos)
+
+Subconjunto reduzida:
+* nenhuma = 4
+* gelatinosas = 3
+* dura = 0
+H(reduzida) ≈ 0,985
+
+Subconjunto normal:
+* nenhuma = 1
+* gelatinosas = 3
+* dura = 4
+H(normal) ≈ 1,406
+
+Entropia ponderada resultante:
+H = (7/15)*0,985 + (8/15)*1,406 ≈ 1,21
+
+Ganho de informação obtido:
+Gain = 1,56 - 1,21 = 0,35
+
+--------------------------------------------------
+
+Atributo: Astigmatismo
+Possíveis valores: não (8 exemplos), sim (7 exemplos)
+H(não) ≈ 1,30
+H(sim) ≈ 1,45
+
+Entropia ponderada resultante:
+H ≈ 1,37
+
+Ganho de informação obtido:
+Gain ≈ 1,56 - 1,37 = 0,19
+
+--------------------------------------------------
+
+Atributo: Diagnóstico
+Possíveis valores: miopia (8 exemplos), hipermetropia (7 exemplos)
+H(miopia) ≈ 1,41
+H(hipermetropia) ≈ 1,56
+
+Entropia ponderada resultante:
+H ≈ 1,48
+
+Ganho de informação obtido:
+Gain ≈ 0,08
+
+--------------------------------------------------
+
+Atributo: Idade
+Ganho de informação obtido:
+Gain ≈ 0,02
+
+--------------------------------------------------
+
+Conclusão (a):
+Entre todos os atributos analisados, Taxa lacrimal apresentou o maior ganho de informação (0,35).
+Por isso, esse atributo é selecionado como nó raiz da árvore de decisão.
+
+==================================================
+
+(b) Ramificação: Taxa lacrimal = reduzida
+
+Subconjunto composto por 7 exemplos:
+* nenhuma = 4
+* gelatinosas = 3
+* dura = 0
+
+Entropia desse subconjunto:
+H ≈ 0,985
+
+--------------------------------------------------
+
+Atributo: Astigmatismo
+não (4 exemplos): nenhuma = 2, gelatinosas = 2 → H = 1
+sim (3 exemplos): nenhuma = 2, gelatinosas = 1 → H ≈ 0,918
+
+Entropia ponderada resultante:
+H ≈ 0,964
+
+Ganho de informação obtido:
+Gain ≈ 0,021
+
+--------------------------------------------------
+
+Atributo: Diagnóstico
+miopia (4 exemplos): nenhuma = 3, gelatinosas = 1 → H ≈ 0,811
+hipermetropia (3 exemplos): nenhuma = 1, gelatinosas = 2 → H ≈ 0,918
+
+Entropia ponderada resultante:
+H ≈ 0,857
+
+Ganho de informação obtido:
+Gain ≈ 0,128
+
+--------------------------------------------------
+
+Atributo: Idade
+Ganho de informação obtido:
+Gain ≈ 0,02
+
+--------------------------------------------------
+
+Conclusão (b):
+Dentro do subconjunto onde Taxa lacrimal = reduzida, o atributo Diagnóstico foi o que gerou maior ganho de informação (0,128).
+Portanto, ele é escolhido como o próximo nó de divisão nesse ramo da árvore.
